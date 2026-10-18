@@ -71,29 +71,24 @@ public class MainActivity extends Activity {
   // ConsumerIrManager expects alternating MARK and SPACE durations, beginning with MARK.
   int[] rc5Pattern(int command,int toggleBit,int profile){
     int field=(command<64)?1:0;
-    int address=profile>=3?3:0;
+    int address=(profile==3||profile==4)?3:0;
     int frame=(1<<13)|(field<<12)|((toggleBit&1)<<11)|(address<<6)|(command&63);
-    ArrayList<Integer> durations=new ArrayList<>();
-    int current=1, duration=0;
+    ArrayList<Integer> levels=new ArrayList<>(),widths=new ArrayList<>();
+    boolean inverted=(profile==1||profile==4);
     for(int i=13;i>=0;i--){
       int bit=(frame>>i)&1;
-      // RC5 Manchester: logical 1 is space then mark; logical 0 is mark then space.
-      boolean inverted=(profile==1||profile==4);
-      int[] halves=(bit==1)^inverted?new int[]{0,1}:new int[]{1,0};
-      for(int level:halves){
-        if(level==current){duration+=889;}
-        else{
-          if(duration>0)durations.add(duration);
-          current=level;duration=889;
-        }
-      }
+      int first=((bit==1)^inverted)?0:1;
+      addPulse(levels,widths,first,889);
+      addPulse(levels,widths,1-first,889);
     }
-    if(duration>0)durations.add(duration);
-    // Trailing MARK requires a SPACE; trailing SPACE is already a valid final interval.
-    if(durations.size()%2==1)durations.add(889);
-    int[] result=new int[durations.size()];
-    for(int i=0;i<result.length;i++)result[i]=durations.get(i);
-    return result;
+    // Android ConsumerIrManager must begin with a MARK. RC5's leading idle
+    // SPACE is not part of the modulated signal; remove it before transmission.
+    if(!levels.isEmpty()&&levels.get(0)==0){levels.remove(0);widths.remove(0);}
+    // ConsumerIrManager expects MARK/SPACE pairs, including final SPACE.
+    if(widths.size()%2!=0)widths.add(889);
+    int[] out=new int[widths.size()];
+    for(int i=0;i<out.length;i++)out[i]=widths.get(i);
+    return out;
   }
   // RC6 mode 0: 6T mark/2T space leader, 1T mark/1T space start,
   // mode bits 000, double-width trailer toggle, 8-bit address and 8-bit command.
@@ -104,7 +99,7 @@ public class MainActivity extends Activity {
     ArrayList<Integer> levels=new ArrayList<>();
     ArrayList<Integer> widths=new ArrayList<>();
     addPulse(levels,widths,1,2664);addPulse(levels,widths,0,888);
-    addPulse(levels,widths,1,444);addPulse(levels,widths,0,444);
+    rc6Bit(levels,widths,1,444);
     // Mode 0 (000)
     for(int i=0;i<3;i++)rc6Bit(levels,widths,0,444);
     // Trailer bit, twice the usual width
@@ -112,6 +107,8 @@ public class MainActivity extends Activity {
     int address=profile==6?3:0;
     for(int i=7;i>=0;i--)rc6Bit(levels,widths,(address>>i)&1,444);
     for(int i=7;i>=0;i--)rc6Bit(levels,widths,(command>>i)&1,444);
+    // Ensure the Android pulse array begins with MARK and ends with SPACE.
+    if(!levels.isEmpty()&&levels.get(0)==0){levels.remove(0);widths.remove(0);}
     // Ensure ending SPACE and a safe trailing gap for transmit.
     if(levels.get(levels.size()-1)==1)addPulse(levels,widths,0,444);
     for(int width:widths)pulses.add(width);
@@ -137,7 +134,7 @@ public class MainActivity extends Activity {
       try{
         for(int n=0;n<3;n++){
           ir.transmit(profile>=5?36000:(profile==2?38000:36000),pattern);
-          if(n<2)Thread.sleep(114);
+          if(n<2)Thread.sleep(Math.max(20,114-(profile>=5?35:25)));
         }
         runOnUiThread(()->status.setText("IR gönderildi: "+name+" — "+profiles[profile]));
       }catch(Exception e){runOnUiThread(()->status.setText("IR hatası: "+e.getMessage()));}

@@ -10,6 +10,10 @@ import android.widget.*;
 import java.util.ArrayList;
 public class MainActivity extends Activity {
   ConsumerIrManager ir; TextView status; int toggle=0; int selectedProfile=0; int candidate=0; boolean pairing=false;
+  final String[] learnNames={"BACK / GERİ","EXIT / ÇIKIŞ","TV / CANLI YAYIN"};
+  final String[] learnKeys={"learn_back","learn_exit","learn_tv"};
+  int learnTarget=0, learnCode=10;
+  TextView learnState;
   final String[] profiles={"RC5 TV / normal","RC5 TV / ters Manchester","RC5 TV / 38 kHz","RC5 adres 3 / normal","RC5 adres 3 / ters Manchester","RC6 mode 0 / TV adres 0","RC6 mode 0 / TV adres 3"};
   @Override public void onCreate(Bundle b){super.onCreate(b);ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);
     LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(14,14,14,14);root.setBackgroundColor(Color.rgb(242,244,248));ScrollView s=new ScrollView(this);s.addView(root);setContentView(s);
@@ -25,15 +29,39 @@ public class MainActivity extends Activity {
     test.setOnClickListener(v->{pairing=true;pairState.setText("Denenen "+(candidate+1)+"/"+profiles.length+": "+profiles[candidate]);transmit("Eşleştirme Ses +",16,candidate);});
     next.setOnClickListener(v->{pairing=false;candidate=(candidate+1)%profiles.length;pairState.setText("Sıradaki "+(candidate+1)+"/"+profiles.length+": "+profiles[candidate]);});
     works.setOnClickListener(v->{if(!pairing){pairState.setText("Önce DENE tuşuna basın.");return;}selectedProfile=candidate;getPreferences(0).edit().putInt("ir_profile",selectedProfile).apply();pairState.setText("Kaydedildi: "+profiles[selectedProfile]);pairing=false;});
+    section(root,"BACK / EXIT / TV KOD EŞLEŞTİRME");
+    TextView learnHelp=new TextView(this);
+    learnHelp.setText("Önce işlevi seçin. DENE tek bir RC5 komutu yollar. TV gerçekten doğru işlevi yaparsa KAYDET'e basın. Diğer kodlara SONRAKİ ile geçin. Her tuşun kodu ayrı saklanır.");
+    learnHelp.setTextColor(Color.DKGRAY);root.addView(learnHelp);
+    Spinner targetSpinner=new Spinner(this);
+    ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,learnNames);
+    targetSpinner.setAdapter(adapter);root.addView(targetSpinner);
+    learnState=new TextView(this);learnState.setTextSize(15);learnState.setTextColor(Color.rgb(25,70,110));
+    learnState.setPadding(dp(6),dp(8),0,dp(8));root.addView(learnState);
+    targetSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){
+      public void onNothingSelected(android.widget.AdapterView<?> p){}
+      public void onItemSelected(android.widget.AdapterView<?> p,android.view.View v,int pos,long id){
+        learnTarget=pos;learnCode=getPreferences(0).getInt(learnKeys[pos],pos==0?10:pos==1?83:63);
+        refreshLearn();
+      }
+    });
+    LinearLayout learnRow=new LinearLayout(this);root.addView(learnRow);
+    TextView learnTry=pairButton("DENE",learnRow),learnSave=pairButton("KAYDET",learnRow),learnNext=pairButton("SONRAKİ",learnRow);
+    learnTry.setOnClickListener(v->transmit("Kod denemesi: "+learnNames[learnTarget],learnCode,selectedProfile));
+    learnSave.setOnClickListener(v->{getPreferences(0).edit().putInt(learnKeys[learnTarget],learnCode).apply();refreshLearn();Toast.makeText(this,"Kod kaydedildi: "+learnCode,Toast.LENGTH_SHORT).show();});
+    learnNext.setOnClickListener(v->{learnCode=(learnCode+1)%128;refreshLearn();});
     section(root,"TEMEL KONTROLLER");
     row(root,new String[]{"Güç","Kaynak","Sessiz"},new int[]{12,56,13});
     section(root,"YÖN TUŞLARI");
-    row(root,new String[]{"Menü","▲ Yukarı","Geri"},new int[]{82,80,83});
+    row(root,new String[]{"Menü","▲ Yukarı","BACK / Geri"},new int[]{82,80,-10});
     row(root,new String[]{"◀ Sol","OK","Sağ ▶"},new int[]{85,87,86});
     row(root,new String[]{"Bilgi","▼ Aşağı","Rehber"},new int[]{15,81,53});
-    row(root,new String[]{"Önceki","Çıkış","TV Kanalına Dön"},new int[]{10,83,32});
+    row(root,new String[]{"Önceki","EXIT / Çıkış","TV / Canlı Yayın"},new int[]{10,-11,-12});
     section(root,"TV VE UYDU KONTROLLERİ");
-    row(root,new String[]{"TV / Radyo","Favoriler","Liste"},new int[]{32,54,53});
+    row(root,new String[]{"TV / Radyo","Favoriler","LIST"},new int[]{-12,54,53});
+    row(root,new String[]{"SMART TV","SOURCES","TV GUIDE"},new int[]{-4,56,53});
+    row(root,new String[]{"OPTIONS","Kırmızı","Yeşil"},new int[]{-5,-6,-7});
+    row(root,new String[]{"Sarı","Mavi",""},new int[]{-8,-9,-1});
     row(root,new String[]{"Kurulum / Menü","Kanal Arama","Sesli Arama"},new int[]{82,-2,-3});
     section(root,"SES VE KANAL");
     row(root,new String[]{"Ses +","Ses −","Kanal +","Kanal −"},new int[]{16,17,32,33});
@@ -42,7 +70,10 @@ public class MainActivity extends Activity {
     row(root,new String[]{"4","5","6"},new int[]{4,5,6});
     row(root,new String[]{"7","8","9"},new int[]{7,8,9});
     row(root,new String[]{"","0",""},new int[]{-1,0,-1});
-    TextView info=new TextView(this);info.setText("TEST: Önce ses, kanal ve aç/kapat tuşlarını deneyin. TV ve TV/Radyo düğmeleri, çalışan Kanal + komutunu kullanarak yayın ekranına dönmeyi dener; kanalı bir ileri alabilir. Bazı TV girişlerinde kaynak seçmek gerekebilir. Geri ve Favoriler komutları modele göre değişebilir. Kanal arama için TV menüsünü açıp kurulum bölümüne gidin. Sesli arama için TV ile ayrı mikrofon bağlantısı gerekir.");info.setPadding(0,20,0,10);info.setTextColor(Color.DKGRAY);root.addView(info);
+    TextView info=new TextView(this);info.setText("TEST: Önce ses, kanal ve aç/kapat tuşlarını deneyin. BACK, EXIT ve TV işlevlerini üstteki kod eşleştirme alanında tek tek deneyip kaydedin. Yeni özel tuşlar için kodlar modele göre değişebilir. Kanal arama için TV menüsünü açıp kurulum bölümüne gidin. Sesli arama için TV ile ayrı mikrofon bağlantısı gerekir.");info.setPadding(0,20,0,10);info.setTextColor(Color.DKGRAY);root.addView(info);
+  }
+  void refreshLearn(){
+    if(learnState!=null)learnState.setText(learnNames[learnTarget]+" — Denenecek RC5 kodu: "+learnCode+" / 127 • Kayıtlı: "+getPreferences(0).getInt(learnKeys[learnTarget],-1));
   }
   TextView pairButton(String text,LinearLayout row){
     TextView b=new TextView(this);b.setText(text);b.setTextColor(Color.WHITE);b.setTextSize(13);b.setTypeface(null,Typeface.BOLD);b.setGravity(Gravity.CENTER);
@@ -70,6 +101,8 @@ public class MainActivity extends Activity {
       if(code>=0){btn.setClickable(true);btn.setOnClickListener(v->send(name,code));}
       else if(code==-2){btn.setClickable(true);btn.setOnClickListener(v->new android.app.AlertDialog.Builder(this).setTitle("Uydu kanal arama").setMessage("TV menüsünden Kurulum / Kanallar / Uydu kurulumu bölümüne gidin. Bu düğme otomatik kanal taraması başlatmaz.").setPositiveButton("Menüyü aç",(d,w)->send("Menü",82)).setNegativeButton("Kapat",null).show());}
       else if(code==-3){btn.setClickable(true);btn.setOnClickListener(v->new android.app.AlertDialog.Builder(this).setTitle("Google sesli arama").setMessage("Kızılötesi bağlantı telefon mikrofonunun sesini televizyona taşıyamaz. TV destekliyorsa Bluetooth kumanda veya ağ üzerinden mikrofon bağlantısı gerekir.").setPositiveButton("Tamam",null).show());}
+      else if(code==-10||code==-11||code==-12){btn.setClickable(true);btn.setOnClickListener(v->send(name,getPreferences(0).getInt(learnKeys[-code-10],code==-10?10:code==-11?83:63)));}
+      else if(code<=-4&&code>=-9){btn.setClickable(true);btn.setOnClickListener(v->new android.app.AlertDialog.Builder(this).setTitle(name+" kodu").setMessage("Bu özel tuşun televizyonunuz için doğru IR kodu henüz doğrulanmadı. Yanlış komut göndermemek için şimdilik devre dışı.").setPositiveButton("Tamam",null).show());}
       else{btn.setVisibility(android.view.View.INVISIBLE);}
     }
   }

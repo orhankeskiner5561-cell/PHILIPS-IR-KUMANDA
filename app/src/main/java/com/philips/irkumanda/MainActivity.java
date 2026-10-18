@@ -31,9 +31,9 @@ public class MainActivity extends Activity {
     row(root,new String[]{"Menü","▲ Yukarı","Geri"},new int[]{82,80,83});
     row(root,new String[]{"◀ Sol","OK","Sağ ▶"},new int[]{85,87,86});
     row(root,new String[]{"Bilgi","▼ Aşağı","Rehber"},new int[]{15,81,53});
-    row(root,new String[]{"Önceki","Çıkış","TV"},new int[]{10,83,63});
+    row(root,new String[]{"Önceki","Çıkış","TV Kanalına Dön"},new int[]{10,83,32});
     section(root,"TV VE UYDU KONTROLLERİ");
-    row(root,new String[]{"TV / Radyo","Favoriler","Liste"},new int[]{63,54,53});
+    row(root,new String[]{"TV / Radyo","Favoriler","Liste"},new int[]{32,54,53});
     row(root,new String[]{"Kurulum / Menü","Kanal Arama","Sesli Arama"},new int[]{82,-2,-3});
     section(root,"SES VE KANAL");
     row(root,new String[]{"Ses +","Ses −","Kanal +","Kanal −"},new int[]{16,17,32,33});
@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
     row(root,new String[]{"4","5","6"},new int[]{4,5,6});
     row(root,new String[]{"7","8","9"},new int[]{7,8,9});
     row(root,new String[]{"","0",""},new int[]{-1,0,-1});
-    TextView info=new TextView(this);info.setText("TEST: Önce ses, kanal ve aç/kapat tuşlarını deneyin. Geri, TV ve Favoriler komutları modele göre değişebilir. Kanal arama için TV menüsünü açıp kurulum bölümüne gidin. Sesli arama için TV ile ayrı mikrofon bağlantısı gerekir.");info.setPadding(0,20,0,10);info.setTextColor(Color.DKGRAY);root.addView(info);
+    TextView info=new TextView(this);info.setText("TEST: Önce ses, kanal ve aç/kapat tuşlarını deneyin. TV ve TV/Radyo düğmeleri, çalışan Kanal + komutunu kullanarak yayın ekranına dönmeyi dener; kanalı bir ileri alabilir. Bazı TV girişlerinde kaynak seçmek gerekebilir. Geri ve Favoriler komutları modele göre değişebilir. Kanal arama için TV menüsünü açıp kurulum bölümüne gidin. Sesli arama için TV ile ayrı mikrofon bağlantısı gerekir.");info.setPadding(0,20,0,10);info.setTextColor(Color.DKGRAY);root.addView(info);
   }
   TextView pairButton(String text,LinearLayout row){
     TextView b=new TextView(this);b.setText(text);b.setTextColor(Color.WHITE);b.setTextSize(13);b.setTypeface(null,Typeface.BOLD);b.setGravity(Gravity.CENTER);

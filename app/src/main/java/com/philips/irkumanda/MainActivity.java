@@ -9,11 +9,22 @@ import android.view.Gravity;
 import android.widget.*;
 import java.util.ArrayList;
 public class MainActivity extends Activity {
-  ConsumerIrManager ir; TextView status; int toggle=0;
+  ConsumerIrManager ir; TextView status; int toggle=0; int selectedProfile=0; int candidate=0; boolean pairing=false;
+  final String[] profiles={"RC5 TV / normal","RC5 TV / ters Manchester","RC5 TV / 38 kHz","RC5 adres 3 / normal","RC5 adres 3 / ters Manchester"};
   @Override public void onCreate(Bundle b){super.onCreate(b);ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);
     LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(14,14,14,14);root.setBackgroundColor(Color.rgb(242,244,248));ScrollView s=new ScrollView(this);s.addView(root);setContentView(s);
     TextView title=new TextView(this);title.setText("PHILIPS IR KUMANDA");title.setTextSize(24);title.setTextColor(Color.BLACK);title.setGravity(Gravity.CENTER);root.addView(title);
     status=new TextView(this);status.setPadding(0,12,0,20);status.setGravity(Gravity.CENTER);status.setTextColor(Color.DKGRAY);root.addView(status);status.setText(ir!=null&&ir.hasIrEmitter()?"Kızılötesi verici bulundu • RC5 test":"Android kızılötesi verici bulamadı");
+    selectedProfile=getPreferences(0).getInt("ir_profile",0);
+    section(root,"KIZILÖTESİ TV EŞLEŞTİRME");
+    TextView guide=new TextView(this);guide.setText("TV açıkken telefonun IR ucunu TV'ye tutun. 'Dene' Ses + komutu gönderir. Ses gerçekten artarsa ÇALIŞTI'ya basın; yalnız kırmızı ışık yanması yeterli değildir.");guide.setTextColor(Color.DKGRAY);guide.setTextSize(14);root.addView(guide);
+    TextView pairState=new TextView(this);pairState.setTextColor(Color.rgb(25,70,110));pairState.setTextSize(15);pairState.setPadding(dp(6),dp(8),0,dp(8));root.addView(pairState);
+    pairState.setText("Kayıtlı profil: "+profiles[selectedProfile]);
+    LinearLayout pairRow=new LinearLayout(this);root.addView(pairRow);
+    TextView test=pairButton("DENE",pairRow),works=pairButton("ÇALIŞTI",pairRow),next=pairButton("SONRAKİ",pairRow);
+    test.setOnClickListener(v->{pairing=true;pairState.setText("Denenen "+(candidate+1)+"/"+profiles.length+": "+profiles[candidate]);transmit("Eşleştirme Ses +",16,candidate);});
+    next.setOnClickListener(v->{candidate=(candidate+1)%profiles.length;pairState.setText("Sıradaki "+(candidate+1)+"/"+profiles.length+": "+profiles[candidate]);});
+    works.setOnClickListener(v->{if(!pairing){pairState.setText("Önce DENE tuşuna basın.");return;}selectedProfile=candidate;getPreferences(0).edit().putInt("ir_profile",selectedProfile).apply();pairState.setText("Kaydedildi: "+profiles[selectedProfile]);pairing=false;});
     section(root,"TEMEL KONTROLLER");
     row(root,new String[]{"⏻ Güç","Kaynak","Sessiz"},new int[]{12,56,13});
     section(root,"YÖN TUŞLARI");
@@ -28,6 +39,11 @@ public class MainActivity extends Activity {
     row(root,new String[]{"7","8","9"},new int[]{7,8,9});
     row(root,new String[]{"","0",""},new int[]{-1,0,-1});
     TextView info=new TextView(this);info.setText("TEST: Önce ses, kanal ve aç/kapat tuşlarını deneyin. Bu sürümde uydu tarama ve favori kanal düzenleme henüz bulunmuyor.");info.setPadding(0,20,0,10);info.setTextColor(Color.DKGRAY);root.addView(info);
+  }
+  TextView pairButton(String text,LinearLayout row){
+    TextView b=new TextView(this);b.setText(text);b.setTextColor(Color.WHITE);b.setTextSize(13);b.setTypeface(null,Typeface.BOLD);b.setGravity(Gravity.CENTER);
+    GradientDrawable bg=new GradientDrawable();bg.setColor(Color.rgb(35,91,109));bg.setCornerRadius(dp(9));b.setBackground(bg);
+    LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(50),1);p.setMargins(dp(3),dp(5),dp(3),dp(5));row.addView(b,p);return b;
   }
   int dp(float value){return (int)(value*getResources().getDisplayMetrics().density+0.5f);}
   void section(LinearLayout root,String text){
@@ -53,15 +69,17 @@ public class MainActivity extends Activity {
   }
   // Philips TV RC5: two start bits, toggle, address 0 (TV), six command bits.
   // ConsumerIrManager expects alternating MARK and SPACE durations, beginning with MARK.
-  int[] rc5Pattern(int command,int toggleBit){
+  int[] rc5Pattern(int command,int toggleBit,int profile){
     int field=(command<64)?1:0;
-    int frame=(1<<13)|(field<<12)|((toggleBit&1)<<11)|(command&63);
+    int address=profile>=3?3:0;
+    int frame=(1<<13)|(field<<12)|((toggleBit&1)<<11)|(address<<6)|(command&63);
     ArrayList<Integer> durations=new ArrayList<>();
     int current=1, duration=0;
     for(int i=13;i>=0;i--){
       int bit=(frame>>i)&1;
       // RC5 Manchester: logical 1 is space then mark; logical 0 is mark then space.
-      int[] halves=bit==1?new int[]{0,1}:new int[]{1,0};
+      boolean inverted=(profile==1||profile==4);
+      int[] halves=(bit==1)^inverted?new int[]{0,1}:new int[]{1,0};
       for(int level:halves){
         if(level==current){duration+=889;}
         else{
@@ -77,21 +95,19 @@ public class MainActivity extends Activity {
     for(int i=0;i<result.length;i++)result[i]=durations.get(i);
     return result;
   }
-  void send(String name,int command){
+  void send(String name,int command){transmit(name,command,selectedProfile);}
+  void transmit(String name,int command,int profile){
     if(ir==null||!ir.hasIrEmitter()){status.setText("IR vericisi bulunamadı");return;}
-    try{
-      final int currentToggle=toggle;toggle^=1;
-      final int[] pattern=rc5Pattern(command,currentToggle);
-      new Thread(()->{
-        try{
-          // A short press on a Philips RC5 remote repeats the same frame.
-          for(int n=0;n<3;n++){
-            ir.transmit(36000,pattern);
-            if(n<2)Thread.sleep(114);
-          }
-          runOnUiThread(()->status.setText("RC5 TV adres 0 gönderildi: "+name+" ("+command+")"));
-        }catch(Exception e){runOnUiThread(()->status.setText("Gönderim hatası: "+e.getMessage()));}
-      }).start();
-    }catch(Exception e){status.setText("Gönderim hatası: "+e.getMessage());}
+    final int currentToggle=toggle;toggle^=1;
+    final int[] pattern=rc5Pattern(command,currentToggle,profile);
+    new Thread(()->{
+      try{
+        for(int n=0;n<3;n++){
+          ir.transmit(profile==2?38000:36000,pattern);
+          if(n<2)Thread.sleep(114);
+        }
+        runOnUiThread(()->status.setText("IR gönderildi: "+name+" — "+profiles[profile]));
+      }catch(Exception e){runOnUiThread(()->status.setText("IR hatası: "+e.getMessage()));}
+    }).start();
   }
 }

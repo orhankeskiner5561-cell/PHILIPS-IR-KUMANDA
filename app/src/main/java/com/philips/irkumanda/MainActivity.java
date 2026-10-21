@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
   buttonRow(root,new String[]{"GERİ SAR","İLERİ SAR","AYARLAR"},null);
   buttonRow(root,new String[]{"REHBER","KANAL LİSTESİ","KAYNAK"},null);
   buttonRow(root,new String[]{"SMART TV","HOME","TV / EXIT"},null);
+  label(root,"TV / EXIT çalışmazsa bu tuşu seçip İLERİ / GERİ ile doğru kodu bulup KAYDET. Sadece IR ışığının yanması doğru komut anlamına gelmez.",12,0xffa6c7e4,Gravity.CENTER);
   buttonRow(root,new String[]{"KIRMIZI","YEŞİL","SARI","MAVİ"},new int[]{0xffa93445,0xff238c5c,0xffb99720,0xff2869b7});
   buttonRow(root,new String[]{"INFO","MENÜ","OPTIONS"},null);
   buttonRow(root,new String[]{"YUKARI"},null);
@@ -103,7 +104,7 @@ public class MainActivity extends Activity {
    Toast.makeText(this,selected+" kodu kaydedildi",Toast.LENGTH_SHORT).show();refresh();return;
   }
   int saved=getPreferences(0).getInt("code_"+name,-1);
-  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}transmit(name+" (varsayılan)",defaultCommand(name),scanProfile);refresh();return;}
+  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}if(name.equals("TV / EXIT")){scanProfile=3;scanCommand=0;transmit(name+" (RC6 deneme)",scanCommand,scanProfile);}else transmit(name+" (varsayılan)",defaultCommand(name),scanProfile);refresh();return;}
   transmit(name,saved%256,saved/256);
  }
  int defaultCommand(String name){

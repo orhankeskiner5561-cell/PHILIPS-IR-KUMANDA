@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
  Spinner keyPicker;
  int scanProfile=0, scanCommand=0, lastProfile=-1, lastCommand=-1, toggle=0;
  String[] protocols={"Philips RC5 TV 36k","Philips RC5 TV 38k","Philips RC5 adres 3 36k","Philips RC6 TV 36k","Philips RC6 adres 3 36k","NEC adres 00FF 38k","NEC adres 20DF 38k","Samsung 07 38k","Sony SIRC 40k"};
- String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","GERİ","EXIT","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9"};
+ String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","GERİ","EXIT","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9"};
  String selected="GERİ";
  Vibrator vibrator;
  int bg=Color.rgb(17,29,47), panel=Color.rgb(32,49,73);
@@ -32,12 +32,13 @@ public class MainActivity extends Activity {
   status=label(root,ir!=null&&ir.hasIrEmitter()?"IR verici hazır":"Bu telefonda IR verici algılanmadı",13,0xffa6c7e4,Gravity.CENTER);
   section(root,"TELEVİZYON KUMANDASI");
   buttonRow(root,new String[]{"GÜÇ","KAYNAK","SESSİZ"},new int[]{0xffad3445,panel,panel});
-  buttonRow(root,new String[]{"MENÜ","AYARLAR","EXIT"},null);
+  buttonRow(root,new String[]{"MENÜ","HOME","EXIT"},null);
+  buttonRow(root,new String[]{"AYARLAR","KAYNAK","TV"},null);
   buttonRow(root,new String[]{"GERİ","YUKARI","FAVORİ"},null);
   buttonRow(root,new String[]{"SOL","OK","SAĞ"},null);
   buttonRow(root,new String[]{"REHBER","AŞAĞI","KANAL LİSTESİ"},null);
   buttonRow(root,new String[]{"SES +","SESSİZ","KANAL +"},null);
-  buttonRow(root,new String[]{"SES -","TV","KANAL -"},null);
+  buttonRow(root,new String[]{"SES -","GERİ","KANAL -"},null);
   buttonRow(root,new String[]{"KIRMIZI","YEŞİL","SARI","MAVİ"},new int[]{0xffa93445,0xff238c5c,0xffb99720,0xff2869b7});
   section(root,"SAYISAL TUŞLAR");
   buttonRow(root,new String[]{"1","2","3"},null);
@@ -57,7 +58,7 @@ public class MainActivity extends Activity {
   scanState=label(root,"",14,0xffe6f2ff,Gravity.LEFT);
   buttonRow(root,new String[]{"◀ GERİ","KAYDET","İLERİ ▶"},new int[]{0xff27617a,0xff238c5c,0xff27617a});
   label(root,"İLERİ yeni kodu hemen gönderir; GERİ bir önceki kodu yeniden gönderir. Kodlar bitince otomatik sonraki protokole geçilir. KAYDET seçili tuşun son gönderilen kodunu saklar.",12,0xffa6b7c9,Gravity.LEFT);
-  label(root,"Desteklenen tarama: Philips RC5 / RC6, NEC, Samsung ve Sony SIRC. Her TV modelinin bütün komutları garanti değildir. IR yalnızca kod gönderir; TV'den doğru çalıştığı bilgisini otomatik alamaz.",12,0xffa6b7c9,Gravity.LEFT);
+  label(root,"HOME / TV / GERİ / EXIT ayrı ayrı eşleştirilir. HOME için varsayılan kod evrensel değildir; doğru kodu bulup kaydetmeniz gerekir. Desteklenen tarama: Philips RC5 / RC6, NEC, Samsung ve Sony SIRC. Her TV modelinin bütün komutları garanti değildir. IR yalnızca kod gönderir; TV'den doğru çalıştığı bilgisini otomatik alamaz.",12,0xffa6b7c9,Gravity.LEFT);
   refresh();
  }
  TextView label(LinearLayout root,String value,int size,int color,int gravity){
@@ -109,7 +110,7 @@ public class MainActivity extends Activity {
    case "YUKARI":return 80;case "AŞAĞI":return 81;case "SOL":return 85;case "SAĞ":return 86;
    case "OK":return 87;case "KAYNAK":return 56;case "REHBER":return 53;
    case "GERİ":return 10;case "EXIT":return 10;case "FAVORİ":return 54;
-   case "KANAL LİSTESİ":return 53;case "AYARLAR":return 82;case "TV":return 63;
+   case "KANAL LİSTESİ":return 53;case "AYARLAR":return 82;case "TV":return 63;case "HOME":return 0;
    default:try{return Integer.parseInt(name);}catch(Exception e){return 0;}
   }
  }

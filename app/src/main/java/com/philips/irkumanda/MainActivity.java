@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
   buttonRow(root,new String[]{"7","8","9"},null);
   buttonRow(root,new String[]{"FAVORİ","0","EXIT"},null);
   section(root,"HER TUŞ İÇİN KOD / PROTOKOL BULUCU");
-  label(root,"Bir tuş seçin. DENE ile TV'ye komut gönderin. TV doğru tepki verirse KAYDET'e basın. Kaydedilen kod o tuşta kalır.",14,0xffc6d5e4,Gravity.LEFT);
+  label(root,"Bir tuş seçin. İLERİ / GERİ kodu TV'ye gönderir. Doğru tepkiyi görünce KAYDET'e basın.",14,0xffc6d5e4,Gravity.LEFT);
   keyPicker=new Spinner(this);
   ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,keys);
   keyPicker.setAdapter(adapter);root.addView(keyPicker);
@@ -99,8 +99,19 @@ public class MainActivity extends Activity {
    Toast.makeText(this,selected+" kodu kaydedildi",Toast.LENGTH_SHORT).show();refresh();return;
   }
   int saved=getPreferences(0).getInt("code_"+name,-1);
-  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}Toast.makeText(this,name+" eşleştirilmedi; aşağıdaki bulucudan kod seçin",Toast.LENGTH_LONG).show();refresh();return;}
+  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}transmit(name+" (varsayılan)",defaultCommand(name),scanProfile);refresh();return;}
   transmit(name,saved%256,saved/256);
+ }
+ int defaultCommand(String name){
+  switch(name){
+   case "GÜÇ":return 12;case "SESSİZ":return 13;case "SES +":return 16;case "SES -":return 17;
+   case "KANAL +":return 32;case "KANAL -":return 33;case "MENÜ":return 82;
+   case "YUKARI":return 80;case "AŞAĞI":return 81;case "SOL":return 85;case "SAĞ":return 86;
+   case "OK":return 87;case "KAYNAK":return 56;case "REHBER":return 53;
+   case "GERİ":return 10;case "EXIT":return 10;case "FAVORİ":return 54;
+   case "KANAL LİSTESİ":return 53;case "AYARLAR":return 82;case "TV":return 63;
+   default:try{return Integer.parseInt(name);}catch(Exception e){return 0;}
+  }
  }
  void addPulse(ArrayList<Integer> levels,ArrayList<Integer> widths,int level,int width){
   int last=levels.size()-1;if(last>=0&&levels.get(last)==level)widths.set(last,widths.get(last)+width);

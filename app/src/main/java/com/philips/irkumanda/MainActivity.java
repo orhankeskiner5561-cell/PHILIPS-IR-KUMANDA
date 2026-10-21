@@ -128,8 +128,8 @@ public class MainActivity extends Activity {
   ArrayList<Integer> l=new ArrayList<>(),w=new ArrayList<>();
   addPulse(l,w,1,9000);addPulse(l,w,0,4500);
   int address=profile==5?0x00FF:profile==6?0x20DF:0xE0E0;
-  int value=(address<<16)|((cmd&255)<<8)|((~cmd)&255);
-  for(int i=31;i>=0;i--)pulseDistance(l,w,(value>>>i)&1,560,560,1690);
+  int[] bytes={address&255,(address>>>8)&255,cmd&255,(~cmd)&255};
+  for(int value:bytes)for(int i=0;i<8;i++)pulseDistance(l,w,(value>>>i)&1,560,560,1690);
   addPulse(l,w,1,560);addPulse(l,w,0,560);return pulses(l,w);
  }
  int[] sonyPattern(int cmd){

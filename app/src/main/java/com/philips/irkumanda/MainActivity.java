@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
  Spinner keyPicker;
  int scanProfile=0, scanCommand=0, lastProfile=-1, lastCommand=-1, toggle=0;
  String[] protocols={"Philips RC5 TV 36k","Philips RC5 TV 38k","Philips RC5 adres 3 36k","Philips RC6 TV 36k","Philips RC6 adres 3 36k","NEC adres 00FF 38k","NEC adres 20DF 38k","Samsung 07 38k","Sony SIRC 40k"};
- String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","GERİ","EXIT","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9"};
+ String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","SMART TV","TV / EXIT","GERİ","EXIT","INFO","OPTIONS","MULTIVIEW","DURDUR","DURAKLAT","OYNAT","GERİ SAR","İLERİ SAR","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9"};
  String selected="GERİ";
  Vibrator vibrator;
  int bg=Color.rgb(17,29,47), panel=Color.rgb(32,49,73);
@@ -30,16 +30,19 @@ public class MainActivity extends Activity {
   scroll.addView(root);setContentView(scroll);
   label(root,"EVREN • AKILLI TV KUMANDASI",22,Color.WHITE,Gravity.CENTER);
   status=label(root,ir!=null&&ir.hasIrEmitter()?"IR verici hazır":"Bu telefonda IR verici algılanmadı",13,0xffa6c7e4,Gravity.CENTER);
-  section(root,"TELEVİZYON KUMANDASI");
-  buttonRow(root,new String[]{"GÜÇ","KAYNAK","SESSİZ"},new int[]{0xffad3445,panel,panel});
-  buttonRow(root,new String[]{"MENÜ","HOME","EXIT"},null);
-  buttonRow(root,new String[]{"AYARLAR","KAYNAK","TV"},null);
-  buttonRow(root,new String[]{"GERİ","YUKARI","FAVORİ"},null);
-  buttonRow(root,new String[]{"SOL","OK","SAĞ"},null);
-  buttonRow(root,new String[]{"REHBER","AŞAĞI","KANAL LİSTESİ"},null);
-  buttonRow(root,new String[]{"SES +","SESSİZ","KANAL +"},null);
-  buttonRow(root,new String[]{"SES -","GERİ","KANAL -"},null);
+  section(root,"PHILIPS • ORİJİNAL KUMANDA DÜZENİ");
+  buttonRow(root,new String[]{"GÜÇ"},new int[]{0xffad3445});
+  buttonRow(root,new String[]{"DURDUR","DURAKLAT","OYNAT"},null);
+  buttonRow(root,new String[]{"GERİ SAR","İLERİ SAR","AYARLAR"},null);
+  buttonRow(root,new String[]{"REHBER","KANAL LİSTESİ","KAYNAK"},null);
+  buttonRow(root,new String[]{"SMART TV","HOME","TV / EXIT"},null);
   buttonRow(root,new String[]{"KIRMIZI","YEŞİL","SARI","MAVİ"},new int[]{0xffa93445,0xff238c5c,0xffb99720,0xff2869b7});
+  buttonRow(root,new String[]{"INFO","MENÜ","OPTIONS"},null);
+  buttonRow(root,new String[]{"YUKARI"},null);
+  buttonRow(root,new String[]{"SOL","OK","SAĞ"},null);
+  buttonRow(root,new String[]{"GERİ","AŞAĞI","MULTIVIEW"},null);
+  buttonRow(root,new String[]{"SES +","SESSİZ","KANAL +"},null);
+  buttonRow(root,new String[]{"SES -","TV","KANAL -"},null);
   section(root,"SAYISAL TUŞLAR");
   buttonRow(root,new String[]{"1","2","3"},null);
   buttonRow(root,new String[]{"4","5","6"},null);
@@ -108,9 +111,9 @@ public class MainActivity extends Activity {
    case "GÜÇ":return 12;case "SESSİZ":return 13;case "SES +":return 16;case "SES -":return 17;
    case "KANAL +":return 32;case "KANAL -":return 33;case "MENÜ":return 82;
    case "YUKARI":return 80;case "AŞAĞI":return 81;case "SOL":return 85;case "SAĞ":return 86;
-   case "OK":return 87;case "KAYNAK":return 56;case "REHBER":return 53;
-   case "GERİ":return 10;case "EXIT":return 10;case "FAVORİ":return 54;
-   case "KANAL LİSTESİ":return 53;case "AYARLAR":return 82;case "TV":return 63;case "HOME":return 0;
+   case "OK":return 87;case "KAYNAK":return 56;case "REHBER":return 53;case "SMART TV":return 63;case "INFO":return 15;case "OPTIONS":return 82;
+   case "GERİ":return 10;case "EXIT":return 10;case "TV / EXIT":return 63;case "FAVORİ":return 54;
+   case "KANAL LİSTESİ":return 53;case "AYARLAR":return 82;case "TV":return 63;case "HOME":return 0;case "MULTIVIEW":return 63;
    default:try{return Integer.parseInt(name);}catch(Exception e){return 0;}
   }
  }

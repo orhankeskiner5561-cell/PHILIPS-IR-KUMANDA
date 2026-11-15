@@ -19,18 +19,27 @@ public class MainActivity extends Activity {
  Spinner keyPicker;
  int scanProfile=0, scanCommand=0, lastProfile=-1, lastCommand=-1, toggle=0;
  String[] protocols={"Philips RC5 TV 36k","Philips RC5 TV 38k","Philips RC5 adres 3 36k","Philips RC6 TV 36k","Philips RC6 adres 3 36k","NEC adres 00FF 38k","NEC adres 20DF 38k","Samsung 07 38k","Sony SIRC 40k"};
- String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","SMART TV","TV / EXIT","GERİ","EXIT","INFO","OPTIONS","MULTIVIEW","DURDUR","DURAKLAT","OYNAT","GERİ SAR","İLERİ SAR","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9"};
- String selected="GERİ";
+ String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","SMART TV","TV / EXIT","GERİ","EXIT","INFO","OPTIONS","MULTIVIEW","DURDUR","DURAKLAT","OYNAT","GERİ SAR","İLERİ SAR","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9","PROFİL","SESLE ARA","LIVE TV","NETFLIX","YOUTUBE","PRIME VIDEO","DISNEY+","AUDIO","CC/SUBT"};
+ String selected="GERİ"; boolean onvo=false; String lastKey=""; String pref(String key){return (onvo?"onvo_code_":"code_")+key;}
  Vibrator vibrator;
  int bg=Color.rgb(17,29,47), panel=Color.rgb(32,49,73);
  @Override public void onCreate(Bundle b){
-  super.onCreate(b);ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+  super.onCreate(b);onvo=getPreferences(0).getBoolean("onvo",false);scanProfile=onvo?5:0;ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
   LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(12),dp(14),dp(12),dp(20));root.setBackgroundColor(bg);
   scroll.addView(root);setContentView(scroll);
   label(root,"EVREN • AKILLI TV KUMANDASI",22,Color.WHITE,Gravity.CENTER);
   status=label(root,ir!=null&&ir.hasIrEmitter()?"IR verici hazır":"Bu telefonda IR verici algılanmadı",13,0xffa6c7e4,Gravity.CENTER);
-  section(root,"PHILIPS • ORİJİNAL KUMANDA DÜZENİ");
+  buttonRow(root,new String[]{"PHILIPS","ONVO"},new int[]{onvo?panel:0xff238c5c,onvo?0xff238c5c:panel});
+ if(onvo){
+ section(root,"ONVO • GOOGLE TV KUMANDASI");
+ buttonRow(root,new String[]{"GÜÇ","KAYNAK"},new int[]{0xffad3445,panel});
+ buttonRow(root,new String[]{"KIRMIZI","YEŞİL","SARI","MAVİ"},new int[]{0xffa93445,0xff238c5c,0xffb99720,0xff2869b7});
+ buttonRow(root,new String[]{"1","2","3"},null);buttonRow(root,new String[]{"4","5","6"},null);buttonRow(root,new String[]{"7","8","9"},null);buttonRow(root,new String[]{"INFO","0","KANAL LİSTESİ"},null);
+ buttonRow(root,new String[]{"PROFİL","SESLE ARA","AYARLAR"},null);buttonRow(root,new String[]{"YUKARI"},null);buttonRow(root,new String[]{"SOL","OK","SAĞ"},null);buttonRow(root,new String[]{"AŞAĞI"},null);buttonRow(root,new String[]{"GERİ","HOME","TV"},null);buttonRow(root,new String[]{"LIVE TV"},new int[]{0xff2869b7});buttonRow(root,new String[]{"SES +","SESSİZ","KANAL +"},null);buttonRow(root,new String[]{"SES -","EXIT","KANAL -"},null);buttonRow(root,new String[]{"NETFLIX","YOUTUBE"},null);buttonRow(root,new String[]{"PRIME VIDEO","DISNEY+"},null);buttonRow(root,new String[]{"AUDIO","CC/SUBT"},null);
+ label(root,"ONVO deneme profili: 38 kHz NEC. Her tuş için doğru kodu deneyip kaydedin. Sesli arama Bluetooth gerektirebilir.",12,0xffa6c7e4,Gravity.CENTER);
+ }else{
+ section(root,"PHILIPS • ORİJİNAL KUMANDA DÜZENİ");
   buttonRow(root,new String[]{"GÜÇ"},new int[]{0xffad3445});
   buttonRow(root,new String[]{"DURDUR","DURAKLAT","OYNAT"},null);
   buttonRow(root,new String[]{"GERİ SAR","İLERİ SAR","AYARLAR"},null);
@@ -49,7 +58,8 @@ public class MainActivity extends Activity {
   buttonRow(root,new String[]{"4","5","6"},null);
   buttonRow(root,new String[]{"7","8","9"},null);
   buttonRow(root,new String[]{"FAVORİ","0","EXIT"},null);
-  section(root,"HER TUŞ İÇİN KOD / PROTOKOL BULUCU");
+  }
+ section(root,"HER TUŞ İÇİN KOD / PROTOKOL BULUCU");
   label(root,"Bir tuş seçin. İLERİ / GERİ kodu TV'ye gönderir. Doğru tepkiyi görünce KAYDET'e basın.",14,0xffc6d5e4,Gravity.LEFT);
   keyPicker=new Spinner(this);
   ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,keys);
@@ -83,7 +93,7 @@ public class MainActivity extends Activity {
  int limit(int profile){return profile<=4?128:profile==8?128:256;}
  void refresh(){
   if(scanState==null)return;
-  int saved=getPreferences(0).getInt("code_"+selected,-1);
+  int saved=getPreferences(0).getInt(pref(selected),-1);
   String savedText=saved<0?"Henüz kaydedilmedi":protocols[saved/256]+" • Komut "+(saved%256);
   scanState.setText("Tuş: "+selected+"\nProtokol: "+protocols[scanProfile]+"\nKod: "+scanCommand+" / "+(limit(scanProfile)-1)+"\nKayıt: "+savedText);
  }
@@ -92,19 +102,21 @@ public class MainActivity extends Activity {
   scanCommand+=direction;
   if(scanCommand>=limit(scanProfile)){scanProfile=(scanProfile+1)%protocols.length;scanCommand=0;}
   if(scanCommand<0){scanProfile=(scanProfile+protocols.length-1)%protocols.length;scanCommand=limit(scanProfile)-1;}
-  lastProfile=scanProfile;lastCommand=scanCommand;
+  lastProfile=scanProfile;lastCommand=scanCommand;lastKey=selected;
   transmit("Kod arama: "+selected,scanCommand,scanProfile);refresh();
  }
  void handle(String name){
+ if(name.equals("PHILIPS")||name.equals("ONVO")){getPreferences(0).edit().putBoolean("onvo",name.equals("ONVO")).apply();recreate();return;}
+ if(onvo&&name.equals("SESLE ARA")){status.setText("Sesli arama için Bluetooth veya uyumlu ağ kumandası gerekir.");return;}
   if(name.equals("İLERİ ▶")){stepCode(1);return;}
   if(name.equals("◀ GERİ")){stepCode(-1);return;}
   if(name.equals("KAYDET")){
-   if(lastProfile!=scanProfile||lastCommand!=scanCommand){Toast.makeText(this,"Önce İLERİ veya GERİ ile kod gönderin",Toast.LENGTH_SHORT).show();return;}
-   getPreferences(0).edit().putInt("code_"+selected,scanProfile*256+scanCommand).apply();
+   if(lastProfile!=scanProfile||lastCommand!=scanCommand||!lastKey.equals(selected)){Toast.makeText(this,"Önce İLERİ veya GERİ ile kod gönderin",Toast.LENGTH_SHORT).show();return;}
+   getPreferences(0).edit().putInt(pref(selected),scanProfile*256+scanCommand).apply();
    Toast.makeText(this,selected+" kodu kaydedildi",Toast.LENGTH_SHORT).show();refresh();return;
   }
-  int saved=getPreferences(0).getInt("code_"+name,-1);
-  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}if(name.equals("TV / EXIT")){scanProfile=3;scanCommand=0;transmit(name+" (RC6 deneme)",scanCommand,scanProfile);}else transmit(name+" (varsayılan)",defaultCommand(name),scanProfile);refresh();return;}
+  int saved=getPreferences(0).getInt(pref(name),-1);
+  if(saved<0){selected=name;for(int i=0;i<keys.length;i++)if(keys[i].equals(name)){keyPicker.setSelection(i);break;}if(onvo){status.setText("ONVO: "+name+" için tarama bölümünde kod bulun ve kaydedin.");refresh();return;}if(name.equals("TV / EXIT")){scanProfile=3;scanCommand=0;transmit(name+" (RC6 deneme)",scanCommand,scanProfile);}else transmit(name+" (varsayılan)",defaultCommand(name),scanProfile);refresh();return;}
   transmit(name,saved%256,saved/256);
  }
  int defaultCommand(String name){

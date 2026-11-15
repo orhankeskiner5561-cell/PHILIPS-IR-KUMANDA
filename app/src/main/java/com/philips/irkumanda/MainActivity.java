@@ -18,13 +18,13 @@ public class MainActivity extends Activity {
  TextView status, scanState;
  Spinner keyPicker;
  int scanProfile=0, scanCommand=0, lastProfile=-1, lastCommand=-1, toggle=0;
- String[] protocols={"Philips RC5 TV 36k","Philips RC5 TV 38k","Philips RC5 adres 3 36k","Philips RC6 TV 36k","Philips RC6 adres 3 36k","NEC adres 00FF 38k","NEC adres 20DF 38k","Samsung 07 38k","Sony SIRC 40k"};
+ int[] extraAddr={65280,65280,65280,65280,256,256,256,256,65025,65025,65025,65025,64260,64260,64260,64260,63240,63240,63240,63240,61200,61200,61200,61200,57120,57120,57120,57120,32640,32640,32640,32640,48960,48960,48960,48960,191,191,191,191,247,247,247,247,32895,32895,32895,32895,16575,16575,16575,16575,1275,1275,1275,1275,2295,2295,2295,2295,4335,4335,4335,4335,765,765,765,765,64770,64770,64770,64770,20400,20400,20400,20400,45135,45135,45135,45135,24480,24480,24480,24480,41055,41055,41055,41055,223,223,223,223,239,239,239,239,0,0,0,0,16448,16448,16448,16448}; int[] extraFreq={38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000,38000,36000,40000,56000}; android.os.Handler autoHandler=new android.os.Handler(android.os.Looper.getMainLooper()); boolean scanning=false; int tested=0; String[] protocols={"Philips RC5 TV 36k","Philips RC5 TV 38k","Philips RC5 adres 3 36k","Philips RC6 TV 36k","Philips RC6 adres 3 36k","NEC adres 00FF 38k","NEC adres 20DF 38k","Samsung 07 38k","Sony SIRC 40k","NEC FF00 38k","NEC FF00 36k","NEC FF00 40k","NEC FF00 56k","NEC 100 38k","NEC 100 36k","NEC 100 40k","NEC 100 56k","NEC FE01 38k","NEC FE01 36k","NEC FE01 40k","NEC FE01 56k","NEC FB04 38k","NEC FB04 36k","NEC FB04 40k","NEC FB04 56k","NEC F708 38k","NEC F708 36k","NEC F708 40k","NEC F708 56k","NEC EF10 38k","NEC EF10 36k","NEC EF10 40k","NEC EF10 56k","NEC DF20 38k","NEC DF20 36k","NEC DF20 40k","NEC DF20 56k","NEC 7F80 38k","NEC 7F80 36k","NEC 7F80 40k","NEC 7F80 56k","NEC BF40 38k","NEC BF40 36k","NEC BF40 40k","NEC BF40 56k","NEC BF 38k","NEC BF 36k","NEC BF 40k","NEC BF 56k","NEC F7 38k","NEC F7 36k","NEC F7 40k","NEC F7 56k","NEC 807F 38k","NEC 807F 36k","NEC 807F 40k","NEC 807F 56k","NEC 40BF 38k","NEC 40BF 36k","NEC 40BF 40k","NEC 40BF 56k","NEC 4FB 38k","NEC 4FB 36k","NEC 4FB 40k","NEC 4FB 56k","NEC 8F7 38k","NEC 8F7 36k","NEC 8F7 40k","NEC 8F7 56k","NEC 10EF 38k","NEC 10EF 36k","NEC 10EF 40k","NEC 10EF 56k","NEC 2FD 38k","NEC 2FD 36k","NEC 2FD 40k","NEC 2FD 56k","NEC FD02 38k","NEC FD02 36k","NEC FD02 40k","NEC FD02 56k","NEC 4FB0 38k","NEC 4FB0 36k","NEC 4FB0 40k","NEC 4FB0 56k","NEC B04F 38k","NEC B04F 36k","NEC B04F 40k","NEC B04F 56k","NEC 5FA0 38k","NEC 5FA0 36k","NEC 5FA0 40k","NEC 5FA0 56k","NEC A05F 38k","NEC A05F 36k","NEC A05F 40k","NEC A05F 56k","NEC DF 38k","NEC DF 36k","NEC DF 40k","NEC DF 56k","NEC EF 38k","NEC EF 36k","NEC EF 40k","NEC EF 56k","NEC 0 38k","NEC 0 36k","NEC 0 40k","NEC 0 56k","NEC 4040 38k","NEC 4040 36k","NEC 4040 40k","NEC 4040 56k"};
  String[] keys={"GÜÇ","SESSİZ","SES +","SES -","KANAL +","KANAL -","MENÜ","AYARLAR","KAYNAK","HOME","SMART TV","TV / EXIT","GERİ","EXIT","INFO","OPTIONS","MULTIVIEW","DURDUR","DURAKLAT","OYNAT","GERİ SAR","İLERİ SAR","OK","YUKARI","AŞAĞI","SOL","SAĞ","FAVORİ","KANAL LİSTESİ","REHBER","TV","KIRMIZI","YEŞİL","SARI","MAVİ","0","1","2","3","4","5","6","7","8","9","PROFİL","SESLE ARA","LIVE TV","NETFLIX","YOUTUBE","PRIME VIDEO","DISNEY+","AUDIO","CC/SUBT"};
  String selected="GERİ"; boolean onvo=false; String lastKey=""; String pref(String key){return (onvo?"onvo_code_":"code_")+key;}
  Vibrator vibrator;
  int bg=Color.rgb(17,29,47), panel=Color.rgb(32,49,73);
  @Override public void onCreate(Bundle b){
-  super.onCreate(b);onvo=getPreferences(0).getBoolean("onvo",false);scanProfile=onvo?5:0;ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+  super.onCreate(b);onvo=getPreferences(0).getBoolean("onvo",false);scanProfile=onvo?9:0;scanCommand=onvo?-1:0;ir=(ConsumerIrManager)getSystemService(CONSUMER_IR_SERVICE);vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
   LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(12),dp(14),dp(12),dp(20));root.setBackgroundColor(bg);
   scroll.addView(root);setContentView(scroll);
@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
   status=label(root,ir!=null&&ir.hasIrEmitter()?"IR verici hazır":"Bu telefonda IR verici algılanmadı",13,0xffa6c7e4,Gravity.CENTER);
   buttonRow(root,new String[]{"PHILIPS","ONVO"},new int[]{onvo?panel:0xff238c5c,onvo?0xff238c5c:panel});
  if(onvo){
+ selected="GÜÇ";
  section(root,"ONVO • GOOGLE TV KUMANDASI");
  buttonRow(root,new String[]{"GÜÇ","KAYNAK"},new int[]{0xffad3445,panel});
  buttonRow(root,new String[]{"KIRMIZI","YEŞİL","SARI","MAVİ"},new int[]{0xffa93445,0xff238c5c,0xffb99720,0xff2869b7});
@@ -64,7 +65,7 @@ public class MainActivity extends Activity {
   keyPicker=new Spinner(this);
   ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,keys);
   keyPicker.setAdapter(adapter);root.addView(keyPicker);
-  for(int i=0;i<keys.length;i++)if(keys[i].equals("GERİ"))keyPicker.setSelection(i);
+  for(int i=0;i<keys.length;i++)if(keys[i].equals(onvo?"GÜÇ":"GERİ"))keyPicker.setSelection(i);
   keyPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){
    public void onNothingSelected(android.widget.AdapterView<?> a){}
    public void onItemSelected(android.widget.AdapterView<?> a,View v,int pos,long id){selected=keys[pos];refresh();}
@@ -73,6 +74,7 @@ public class MainActivity extends Activity {
   buttonRow(root,new String[]{"◀ GERİ","KAYDET","İLERİ ▶"},new int[]{0xff27617a,0xff238c5c,0xff27617a});
   label(root,"İLERİ yeni kodu hemen gönderir; GERİ bir önceki kodu yeniden gönderir. Kodlar bitince otomatik sonraki protokole geçilir. KAYDET seçili tuşun son gönderilen kodunu saklar.",12,0xffa6b7c9,Gravity.LEFT);
   label(root,"HOME / TV / GERİ / EXIT ayrı ayrı eşleştirilir. HOME için varsayılan kod evrensel değildir; doğru kodu bulup kaydetmeniz gerekir. Desteklenen tarama: Philips RC5 / RC6, NEC, Samsung ve Sony SIRC. Her TV modelinin bütün komutları garanti değildir. IR yalnızca kod gönderir; TV'den doğru çalıştığı bilgisini otomatik alamaz.",12,0xffa6b7c9,Gravity.LEFT);
+  if(onvo){buttonRow(root,new String[]{"OTOMATİK TARA","DURDUR TARAMA","BAŞA DÖN"},null);label(root,"TV tepki verince DURDUR TARAMA, gerekirse GERİ ve ardından KAYDET. Tarama uzun sürebilir.",13,0xffa6c7e4,Gravity.LEFT);}
   refresh();
  }
  TextView label(LinearLayout root,String value,int size,int color,int gravity){
@@ -95,17 +97,24 @@ public class MainActivity extends Activity {
   if(scanState==null)return;
   int saved=getPreferences(0).getInt(pref(selected),-1);
   String savedText=saved<0?"Henüz kaydedilmedi":protocols[saved/256]+" • Komut "+(saved%256);
-  scanState.setText("Tuş: "+selected+"\nProtokol: "+protocols[scanProfile]+"\nKod: "+scanCommand+" / "+(limit(scanProfile)-1)+"\nKayıt: "+savedText);
+  scanState.setText("Tuş: "+selected+"\nProtokol: "+protocols[scanProfile]+"\nKod: "+scanCommand+" / "+(limit(scanProfile)-1)+"\nKayıt: "+savedText+(onvo?"\nOtomatik: "+tested+" / "+((protocols.length-9)*256):""));
  }
  void vibrate(){try{if(vibrator!=null&&vibrator.hasVibrator()){if(android.os.Build.VERSION.SDK_INT>=26)vibrator.vibrate(VibrationEffect.createOneShot(25,VibrationEffect.DEFAULT_AMPLITUDE));else vibrator.vibrate(25);}}catch(Exception ignored){}}
  void stepCode(int direction){
   scanCommand+=direction;
-  if(scanCommand>=limit(scanProfile)){scanProfile=(scanProfile+1)%protocols.length;scanCommand=0;}
-  if(scanCommand<0){scanProfile=(scanProfile+protocols.length-1)%protocols.length;scanCommand=limit(scanProfile)-1;}
+  if(scanCommand>=limit(scanProfile)){scanProfile=(scanProfile+1)%protocols.length;if(onvo&&scanProfile<9)scanProfile=9;else if(!onvo&&scanProfile>=9)scanProfile=0;scanCommand=0;}
+  if(scanCommand<0){scanProfile=(scanProfile+protocols.length-1)%protocols.length;if(onvo&&scanProfile<9)scanProfile=protocols.length-1;else if(!onvo&&scanProfile>=9)scanProfile=8;scanCommand=limit(scanProfile)-1;}
   lastProfile=scanProfile;lastCommand=scanCommand;lastKey=selected;
   transmit("Kod arama: "+selected,scanCommand,scanProfile);refresh();
  }
+ void stopScan(){scanning=false;autoHandler.removeCallbacks(autoStep);refresh();}
+ Runnable autoStep=new Runnable(){public void run(){if(!scanning)return;if(tested>=(protocols.length-9)*256){stopScan();status.setText("Tarama tamamlandı; başka protokol gerekebilir.");return;}stepCode(1);tested++;autoHandler.postDelayed(this,1100);}};
+ @Override protected void onPause(){stopScan();super.onPause();}
  void handle(String name){
+ if(name.equals("OTOMATİK TARA")){if(!onvo||scanning)return;scanning=true;tested=0;lastKey="";autoHandler.post(autoStep);return;}
+ if(name.equals("DURDUR TARAMA")){stopScan();return;}
+ if(name.equals("BAŞA DÖN")){stopScan();scanProfile=9;scanCommand=-1;lastKey="";refresh();return;}
+ if(scanning){stopScan();if(name.equals("KAYDET")){status.setText("Tarama durdu. Doğru kodu kontrol edip tekrar KAYDET.");return;}}
  if(name.equals("PHILIPS")||name.equals("ONVO")){getPreferences(0).edit().putBoolean("onvo",name.equals("ONVO")).apply();recreate();return;}
  if(onvo&&name.equals("SESLE ARA")){status.setText("Sesli arama için Bluetooth veya uyumlu ağ kumandası gerekir.");return;}
   if(name.equals("İLERİ ▶")){stepCode(1);return;}
@@ -164,7 +173,7 @@ public class MainActivity extends Activity {
  int[] necPattern(int cmd,int profile){
   ArrayList<Integer> l=new ArrayList<>(),w=new ArrayList<>();
   addPulse(l,w,1,9000);addPulse(l,w,0,4500);
-  int address=profile==5?0x00FF:profile==6?0x20DF:0xE0E0;
+  int address=profile>=9?extraAddr[profile-9]:profile==5?0x00FF:profile==6?0x20DF:0xE0E0;
   int[] bytes={address&255,(address>>>8)&255,cmd&255,(~cmd)&255};
   for(int value:bytes)for(int i=0;i<8;i++)pulseDistance(l,w,(value>>>i)&1,560,560,1690);
   addPulse(l,w,1,560);addPulse(l,w,0,560);return pulses(l,w);
@@ -179,8 +188,8 @@ public class MainActivity extends Activity {
  void transmit(String name,int command,int profile){
   if(ir==null||!ir.hasIrEmitter()){status.setText("Bu cihazda IR verici yok");return;}
   int t=toggle;toggle^=1;
-  int[] pattern=profile<=2?rc5Pattern(command,t,profile):profile<=4?rc6Pattern(command,t,profile):profile<=7?necPattern(command,profile):sonyPattern(command);
-  int frequency=profile==1?38000:profile<=4?36000:profile==8?40000:38000;
+  int[] pattern=profile<=2?rc5Pattern(command,t,profile):profile<=4?rc6Pattern(command,t,profile):profile==8?sonyPattern(command):necPattern(command,profile);
+  int frequency=profile>=9?extraFreq[profile-9]:profile==1?38000:profile<=4?36000:profile==8?40000:38000;
   new Thread(()->{
    try{
     for(int i=0;i<2;i++){ir.transmit(frequency,pattern);if(i==0)Thread.sleep(125);}
